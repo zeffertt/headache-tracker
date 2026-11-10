@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Headache Tracker</string>
+    <string name="title_activity_main">Headache Tracker</string>
+    <string name="package_name">uk.zeffertt.headachetracker</string>
+    <string name="custom_url_scheme">uk.zeffertt.headachetracker</string>
+    <string name="shortcut_start_short">Headache started</string>
+    <string name="shortcut_start_long">Headache started</string>
+</resources>

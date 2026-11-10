@@ -1,0 +1,9 @@
+{
+  "appId": "uk.zeffertt.headachetracker",
+  "appName": "Headache Tracker",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_notify", "iconColor": "#9A5238" }
+  }
+}

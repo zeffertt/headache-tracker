@@ -1,0 +1,58 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APP_VERSION: 0.1.${{ github.run_number }}
+      VERSION_CODE: ${{ github.run_number }}
+      HAS_KEY: ${{ secrets.KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx cap sync android
+
+      # Signed build: installs over the top of the previous version, so the log is kept.
+      - name: Build signed release
+        if: env.HAS_KEY == 'true'
+        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: headache
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          KEYSTORE_FILE="$RUNNER_TEMP/release.keystore" ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/headache-tracker-v$APP_VERSION.apk"
+
+      - name: Publish release
+        if: env.HAS_KEY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v$APP_VERSION" "headache-tracker-v$APP_VERSION.apk" --title "v$APP_VERSION" --notes "Automatic build of ${GITHUB_SHA::7}"
+
+      # No signing key yet: compile only, to prove the app builds. Not for installing.
+      - name: Build unsigned test version
+        if: env.HAS_KEY != 'true'
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
