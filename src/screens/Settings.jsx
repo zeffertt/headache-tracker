@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { dateKey } from '../lib/dates.js';
-import { connectHealth, healthAvailable, syncHealth } from '../lib/health.js';
+import { connectHealth, healthStatus, openHealthSettings, syncHealth } from '../lib/health.js';
 import { newId } from '../lib/logic.js';
 import { requestNotifications } from '../lib/notify.js';
 import { exportData, isNative, listSnapshots, readSnapshot } from '../lib/platform.js';
@@ -29,7 +29,7 @@ export function Settings({ state, go, toast }) {
   const [snaps, setSnaps] = useState([]);
   const [busy, setBusy] = useState('');
   const fileRef = useRef();
-  useEffect(() => { healthAvailable().then(setHealthOk); listSnapshots().then(setSnaps); }, []);
+  useEffect(() => { healthStatus().then(setHealthOk); listSnapshots().then(setSnaps); }, []);
 
   const run = async (name, fn, okMsg) => {
     setBusy(name);
@@ -80,8 +80,9 @@ export function Settings({ state, go, toast }) {
 
       <Section title="Health Connect" hint="Sleep, exercise, steps, resting heart rate, water and calories from your watch and other apps. Read only. Anything you type in yourself is used instead.">
         <div class="card">
-          {healthOk === false && <span class="small muted">{isNative ? 'Health Connect is not available on this phone.' : 'Only available in the Android app.'}</span>}
-          {healthOk && (s.healthOn ? (
+          {healthOk === null && <span class="small muted">Checking...</span>}
+          {healthOk && !healthOk.available && <span class="small muted">{healthOk.reason || 'Health Connect is not available on this phone.'}</span>}
+          {healthOk?.available && (s.healthOn ? (
             <div class="grid2">
               <button type="button" class="btn small" disabled={!!busy} onClick={() => run('hc', () => syncHealth(30), 'Health data updated')}>{busy === 'hc' ? 'Syncing...' : 'Sync now'}</button>
               <button type="button" class="btn small" onClick={() => set((x) => { x.healthOn = false; })}>Disconnect</button>
@@ -89,6 +90,7 @@ export function Settings({ state, go, toast }) {
           ) : (
             <button type="button" class="btn small primary" disabled={!!busy} onClick={() => run('hc', connectHealth, (ok) => (ok ? 'Connected' : 'No access was granted'))}>Connect</button>
           ))}
+          {healthOk?.available && <button type="button" class="link" onClick={openHealthSettings}>Manage access in Health Connect</button>}
         </div>
       </Section>
 

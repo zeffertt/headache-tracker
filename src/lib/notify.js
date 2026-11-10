@@ -8,7 +8,8 @@ const EVENING_ID = 1;
 const ACTION_TYPE = 'EVENING';
 const TWO_HOURS = 2 * 3600 * 1000;
 
-const plugin = async () => (await import('@capacitor/local-notifications')).LocalNotifications;
+// Imported statically on purpose: see the note in health.js.
+import { LocalNotifications as LN } from '@capacitor/local-notifications';
 
 // 31-bit id from a dose id, so a check-in can be cancelled or replaced later.
 const doseNotifId = (doseId) => { let h = 7; for (const ch of doseId) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h) || 2; };
@@ -25,7 +26,6 @@ export function eveningBody(state, now = new Date()) {
 
 export async function initNotifications(onOpen) {
   if (!isNative) return;
-  const LN = await plugin();
   await LN.registerActionTypes({ types: [{ id: ACTION_TYPE, actions: [{ id: 'clear', title: 'No headache today' }, { id: 'open', title: 'Open' }] }] });
   await LN.addListener('localNotificationActionPerformed', (ev) => {
     if (ev.actionId === 'clear') {
@@ -37,7 +37,6 @@ export async function initNotifications(onOpen) {
 
 export async function requestNotifications() {
   if (!isNative) return false;
-  const LN = await plugin();
   const p = await LN.requestPermissions();
   return p.display === 'granted';
 }
@@ -46,7 +45,6 @@ export async function requestNotifications() {
 export async function scheduleEvening() {
   if (!isNative) return;
   const s = getState();
-  const LN = await plugin();
   await LN.cancel({ notifications: [{ id: EVENING_ID }] }).catch(() => {});
   if (!s.settings.reminderOn) return;
   if ((await LN.checkPermissions()).display !== 'granted') return;
@@ -63,7 +61,6 @@ export async function scheduleMedCheck(episodeId, dose) {
   if (!isNative || !s.settings.medCheckOn) return;
   const at = new Date(new Date(dose.time).getTime() + TWO_HOURS);
   if (at <= new Date()) return;
-  const LN = await plugin();
   if ((await LN.checkPermissions()).display !== 'granted') return;
   await LN.schedule({ notifications: [{
     id: doseNotifId(dose.id), title: `Did the ${dose.name} help?`, body: 'Two hours on. Tap to record how you feel.',
@@ -73,6 +70,5 @@ export async function scheduleMedCheck(episodeId, dose) {
 
 export async function cancelMedCheck(doseId) {
   if (!isNative) return;
-  const LN = await plugin();
   await LN.cancel({ notifications: [{ id: doseNotifId(doseId) }] }).catch(() => {});
 }

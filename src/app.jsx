@@ -47,13 +47,14 @@ export function App() {
     (async () => {
       await load();
       const quickStart = () => { const open = openEpisode(getState()); setStack([{ name: 'today' }, { name: 'attack', id: open ? open.id : startEpisode() }]); };
-      await initNotifications(go);
+      // Each startup step is guarded, so one failing plugin can't stop the rest.
+      await initNotifications(go).catch((e) => console.warn('notifications', e));
       const onHide = () => { if (document.visibilityState === 'hidden') flush(); };
       document.addEventListener('visibilitychange', onHide);
       cleanup.push(() => document.removeEventListener('visibilitychange', onHide));
       // Ask for notification permission once, on first launch.
       if (isNative && !getState().settings.askedNotif) {
-        const granted = await requestNotifications();
+        const granted = await requestNotifications().catch(() => false);
         update((s) => { s.settings.askedNotif = true; if (!granted) s.settings.reminderOn = false; });
       }
       cleanup.push(onSaved(() => { scheduleEvening().catch(() => {}); }));

@@ -117,3 +117,12 @@ describe('stats', () => {
     expect(dateKey(new Date(2026, 10, 9, 23, 59))).toBe('2026-11-09');
   });
 });
+
+describe('plugin loading', () => {
+  it('never returns a Capacitor plugin from an async function (the await would hang)', async () => {
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const files = readdirSync('src', { recursive: true }).filter((f) => /\.(js|jsx)$/.test(f));
+    const bad = files.filter((f) => /async\s*\(\)\s*=>\s*\(await import\([^)]*\)\)\.\w+/.test(readFileSync(`src/${f}`, 'utf8')));
+    expect(bad).toEqual([]);
+  });
+});

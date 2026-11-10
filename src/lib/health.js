@@ -7,15 +7,22 @@ import { getState, update } from './store.js';
 const READ = ['sleep', 'steps', 'restingHeartRate', 'dietaryWater', 'dietaryEnergyConsumed', 'workouts'];
 const SLEEPING = new Set(['asleep', 'rem', 'deep', 'light']);
 
-const plugin = async () => (await import('@capgo/capacitor-health')).Health;
+// Imported statically on purpose. Capacitor plugin objects answer to `.then`, so returning one
+// from an async function makes the await hang forever.
+import { Health } from '@capgo/capacitor-health';
 
-export async function healthAvailable() {
-  if (!isNative) return false;
-  try { return (await (await plugin()).isAvailable()).available; } catch { return false; }
+// { available, reason }. Never hangs: gives up after 8 seconds.
+export async function healthStatus() {
+  if (!isNative) return { available: false, reason: 'Only available in the Android app.' };
+  const timeout = new Promise((r) => setTimeout(() => r({ available: false, reason: 'Health Connect did not respond.' }), 8000));
+  try { return await Promise.race([Health.isAvailable(), timeout]); } catch (e) { return { available: false, reason: e?.message || 'Health Connect is not available.' }; }
+}
+
+export async function openHealthSettings() {
+  try { await Health.openHealthConnectSettings(); } catch { /* not installed */ }
 }
 
 export async function connectHealth() {
-  const Health = await plugin();
   const status = await Health.requestAuthorization({ read: READ });
   const ok = status.readAuthorized.length > 0;
   update((s) => { s.settings.healthOn = ok; });
@@ -36,7 +43,6 @@ export function sleepMinutes(sample) {
 export async function syncHealth(daysBack = 14) {
   const s = getState();
   if (!isNative || !s.settings.healthOn) return;
-  const Health = await plugin();
   const today = dateKey();
   const startK = addDays(today, -daysBack);
   const startDate = parseKey(startK).toISOString();
