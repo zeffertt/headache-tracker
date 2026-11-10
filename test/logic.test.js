@@ -126,3 +126,16 @@ describe('plugin loading', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('painkillers not for a headache', () => {
+  it('count towards med days but do not make a headache day', async () => {
+    const { allDoses, dosesOn } = await import('../src/lib/logic.js');
+    const s = freshState();
+    s.days['2026-11-03'] = { otherMeds: [{ id: 'x', medId: 'paracetamol', cls: 'simple', name: 'Paracetamol', time: at('2026-11-03', '10:00') }] };
+    s.episodes = [{ start: at('2026-11-04', '09:00'), end: at('2026-11-04', '10:00'), meds: [{ id: 'y', medId: 'paracetamol', time: at('2026-11-04', '09:10') }] }];
+    expect(overuse(s, '2026-11').totalDays).toBe(2);
+    expect(dayStatus('2026-11-03', s)).toBe('none');
+    expect(allDoses(s).map((d) => d.episodeId === null)).toEqual([false, true]);
+    expect(dosesOn(s, '2026-11-03').length).toBe(1);
+  });
+});

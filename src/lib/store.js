@@ -107,3 +107,16 @@ export function logDose(epId, med, timeIso = new Date().toISOString()) {
   });
   return doseId;
 }
+
+// A painkiller taken for something other than a headache. Counts towards overuse only.
+export function logOtherDose(med, timeIso = new Date().toISOString()) {
+  const k = dateKey(new Date(timeIso));
+  editDay(k, (d) => {
+    (d.otherMeds ||= []).push({ id: newId(), medId: med.id, name: med.name, dose: med.dose, cls: med.cls, time: timeIso });
+  });
+}
+
+export function removeDose(dose) {
+  if (dose.episodeId) editEpisode(dose.episodeId, (e) => { e.meds = e.meds.filter((x) => x.id !== dose.id); });
+  else editDay(dateKey(new Date(dose.time)), (d) => { d.otherMeds = (d.otherMeds || []).filter((x) => x.id !== dose.id); });
+}

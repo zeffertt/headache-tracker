@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { dateKey, durationStr, longDate, monthTitle, parseKey, timeStr } from '../lib/dates.js';
-import { dayStatus, dayValue, headacheDays, isLate, isMigraineType, monthSummary, newId } from '../lib/logic.js';
+import { dayStatus, dayValue, dosesOn, headacheDays, isLate, isMigraineType, monthSummary, newId } from '../lib/logic.js';
 import { update } from '../lib/store.js';
 import { Icon, TopBar } from '../ui.jsx';
 import { DayForm } from './DayForm.jsx';
@@ -47,6 +47,9 @@ function DayDetail({ k, state, go }) {
         <span class={`badge sev-${status}`}>{LABEL[status]}</span>
       </div>
       {eps.map((ep) => <EpisodeRow key={ep.id} ep={ep} state={state} go={go} />)}
+      {(day.otherMeds || []).length > 0 && (
+        <span class="small muted row g6"><Icon name="pill" size={14} />Not for a headache: {day.otherMeds.map((d) => `${d.name} ${timeStr(d.time)}`).join(', ')}</span>
+      )}
       {trig.length > 0 && (
         <div class="col g8"><span class="label">Triggers</span><div class="row wrap g6">{trig.map((t) => <span class="tag" key={t}>{t}</span>)}</div></div>
       )}
@@ -108,7 +111,7 @@ export function Calendar({ state, go, setTheme, sel: initialSel }) {
             const s = future ? null : dayStatus(k, state, hd);
             const cls = future ? '' : k === today && s === 'none' ? 'sev-today' : `sev-${s}`;
             const day = state.days[k];
-            const med = hd[k]?.episodes.some((e) => e.meds.some((d) => dateKey(new Date(d.time)) === k));
+            const med = dosesOn(state, k).length > 0;
             return (
               <button type="button" key={k} class="daybtn" disabled={future} aria-pressed={sel === k ? 'true' : 'false'}
                 aria-label={`${longDate(k)}${future ? '' : `, ${LABEL[s]}`}`} onClick={() => setSel(k)}>

@@ -2,6 +2,7 @@
   --bg: #F3EFE8; --surface: #FBF8F3; --surface2: #EAE3D8; --text: #2A2F38; --muted: #5C6470; --border: #DDD5C8;
   --blue: #4F6E8C; --blue-soft: #DCE5EE; --blue-ink: #2E4A63; --sage: #5F7D68; --sage-soft: #DCE7DE;
   --amber: #D4A35A; --sand: #E8D7B2; --clay: #9A5238; --on-warm: #2A2F38; --on-clay: #FFFFFF; --warn-bg: #F4E4C8;
+  --good: #A6D1AE; --good-ink: #17331F;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -9,6 +10,7 @@
     --bg: #1B2129; --surface: #242C36; --surface2: #2D3642; --text: #ECE7DF; --muted: #A7AFBA; --border: #38424F;
     --blue: #93AECA; --blue-soft: #2F4054; --blue-ink: #DCE6F0; --sage: #A3BCA9; --sage-soft: #2E3D35;
     --amber: #D9AE6B; --sand: #C9B68F; --clay: #A85C40; --warn-bg: #3D3424;
+    --good: #3E7A50; --good-ink: #F2F7F1;
     color-scheme: dark;
   }
 }
@@ -16,6 +18,7 @@
   --bg: #1B2129; --surface: #242C36; --surface2: #2D3642; --text: #ECE7DF; --muted: #A7AFBA; --border: #38424F;
   --blue: #93AECA; --blue-soft: #2F4054; --blue-ink: #DCE6F0; --sage: #A3BCA9; --sage-soft: #2E3D35;
   --amber: #D9AE6B; --sand: #C9B68F; --clay: #A85C40; --warn-bg: #3D3424;
+    --good: #3E7A50; --good-ink: #F2F7F1;
   color-scheme: dark;
 }
 /* The attack screen is always dark and dim, whatever the app theme. */
@@ -23,6 +26,7 @@
   --bg: #111519; --surface: #1A2027; --surface2: #222A33; --text: #CFCAC2; --muted: #8A929C; --border: #2D3642;
   --blue: #6F8DAB; --blue-soft: #1F2B38; --blue-ink: #DCE6F0; --sage: #7F9886; --sage-soft: #1E2A24;
   --amber: #A88550; --sand: #8F8166; --clay: #8A4A33; --on-warm: #111519; --on-clay: #ECE7DF; --warn-bg: #2B2519;
+  --good: #2F5A3B; --good-ink: #DDE8DD;
   color-scheme: dark;
 }
 
@@ -67,7 +71,7 @@ h3 { font-size: 15px; font-weight: 800; }
 .btn { min-height: 52px; border-radius: 18px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-size: 16px; font-weight: 800; padding: 0 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn.primary { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--blue-ink); }
 .btn.sage { border-color: var(--sage); color: var(--sage); }
-.btn.sage.on { background: var(--sage-soft); color: var(--text); }
+.btn.sage.on { background: var(--good); border-color: var(--good); color: var(--good-ink); }
 .btn.danger { border-color: var(--clay); color: var(--clay); }
 .btn.small { min-height: 44px; font-size: 14px; border-radius: 14px; padding: 0 14px; }
 
@@ -82,7 +86,7 @@ textarea.field { resize: none; line-height: 1.4; }
 .sev-moderate { background: var(--amber); color: var(--on-warm); }
 .sev-severe { background: var(--clay); color: var(--on-clay); }
 .sev-unrated { background: var(--surface2); color: var(--text); }
-.sev-clear { background: var(--sage-soft); color: var(--text); }
+.sev-clear { background: var(--good); color: var(--good-ink); }
 .sev-none { border: 1.5px dashed var(--muted); color: var(--muted); }
 .sev-today { border: 2px solid var(--blue); color: var(--text); }
 

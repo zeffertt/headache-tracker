@@ -47,19 +47,31 @@ export function isLate(dayK, createdAtIso) {
   return new Date(createdAtIso).getTime() - endOfDay > LATE_MS;
 }
 
+// Every painkiller dose: those logged against a headache, and those taken for something else
+// (stored on the day as otherMeds). Both count towards medication overuse.
+export function allDoses(state) {
+  const out = [];
+  for (const ep of state.episodes) for (const d of ep.meds || []) out.push({ ...d, episodeId: ep.id });
+  for (const day of Object.values(state.days)) for (const d of day.otherMeds || []) out.push({ ...d, episodeId: null });
+  return out;
+}
+
+// Doses taken on a given local day, oldest first.
+export function dosesOn(state, k) {
+  return allDoses(state).filter((d) => dateKey(new Date(d.time)) === k).sort((a, b) => a.time.localeCompare(b.time));
+}
+
 // Days in a month on which acute medication was taken, by class, against the overuse thresholds.
 export function overuse(state, month = monthKey(dateKey())) {
   const medById = Object.fromEntries(state.meds.map((m) => [m.id, m]));
   const byClass = {};
   const allDays = new Set();
-  for (const ep of state.episodes) {
-    for (const dose of ep.meds || []) {
-      const k = dateKey(new Date(dose.time));
-      if (monthKey(k) !== month) continue;
-      const cls = medById[dose.medId]?.cls || dose.cls || 'other';
-      (byClass[cls] ||= new Set()).add(k);
-      allDays.add(k);
-    }
+  for (const dose of allDoses(state)) {
+    const k = dateKey(new Date(dose.time));
+    if (monthKey(k) !== month) continue;
+    const cls = medById[dose.medId]?.cls || dose.cls || 'other';
+    (byClass[cls] ||= new Set()).add(k);
+    allDays.add(k);
   }
   const rows = MED_CLASSES.filter((c) => c.limit).map((c) => {
     const days = byClass[c.id]?.size || 0;

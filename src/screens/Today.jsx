@@ -4,6 +4,7 @@ import { dayStatus, headacheDays, openEpisode, overuse } from '../lib/logic.js';
 import { startEpisode } from '../lib/store.js';
 import { Icon } from '../ui.jsx';
 import { DayForm } from './DayForm.jsx';
+import { QuickMeds } from './QuickMeds.jsx';
 
 export function useNow(ms = 30000) {
   const [now, setNow] = useState(new Date());
@@ -101,6 +102,8 @@ export function Today({ state, go, setTheme }) {
           </span>
         </button>
       )}
+
+      <QuickMeds state={state} go={go} />
 
       <DayForm k={today} state={state} isToday go={go} />
     </div>
